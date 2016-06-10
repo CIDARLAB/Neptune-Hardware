@@ -94,7 +94,7 @@ void loop() {
       Serial.print(" is turning to PWM value: ");
       Serial.print(inputString.substring(5,9));
       
-      myservo.write(inputString.substring(3,5).toInt());              // tell servo to go to position in variable 'pos' 
+      myservo.write(inputString.substring(7,9).toInt());              // tell servo to go to position in variable 'pos' 
       delay(15);
         
       Serial.println("");
