@@ -4,7 +4,10 @@ boolean stringComplete = false;  // whether the string is complete
 boolean error_flag = false;      // wheather input string is valid
 
 int pos = 0;    // variable to store the servo position 
-Servo myservo;  // create servo object to control a servo 
+Servo myservo1;  // create servo object to control a servo 
+Servo myservo2;
+Servo myservo3;
+Servo myservo4;
                 
 
 void setup() {
@@ -13,7 +16,10 @@ void setup() {
   // reserve 200 bytes for the inputString:
   inputString.reserve(200);
 
-  myservo.attach(9);  // attaches the servo on pin 9 to the servo object 
+  myservo1.attach(11);  // attaches the servo on pin 9 to the servo object
+  myservo2.attach(10);
+  myservo3.attach(5);
+  myservo4.attach(6); 
 }
 
 void loop() {
@@ -33,7 +39,7 @@ void loop() {
 
     // when newline arrives, induce PWM signal to match it
   if (stringComplete) {
-    
+/*    
       // Check to ensure valid
       error_flag = false;
         // Ensure first character is starting character 's'
@@ -56,7 +62,6 @@ void loop() {
           Serial.println("Not that many pumps numnuts");
         }
       }
-
       // ensure next four inputed values are numbers, no greater than 4096
       for(byte i=5;i<9;i++)
       {
@@ -78,8 +83,7 @@ void loop() {
         error_flag = true;
         Serial.println("End line not detected");
       }
-
-
+*/
     // if error flag is raised, stop and try again
     if (error_flag) {
         Serial.println("Invalid entry.");
@@ -93,9 +97,33 @@ void loop() {
       Serial.print(inputString.substring(1,5));
       Serial.print(" is turning to PWM value: ");
       Serial.print(inputString.substring(5,9));
+
+
+
+      if(inputString.substring(1,5) == "0001") {
+        Serial.println("got to servo1");
+        myservo1.write(inputString.substring(6,9).toInt());              // tell servo to go to position in variable 'pos' 
+        delay(15);
+      }
+      else if(inputString.substring(1,5) == "0002") {
+        myservo2.write(inputString.substring(6,9).toInt());              // tell servo to go to position in variable 'pos'
+        Serial.print("at pump2"); 
+        delay(15);
+      }
+      else if(inputString.substring(1,5) == "0003") {
+        myservo3.write(inputString.substring(6,9).toInt());              // tell servo to go to position in variable 'pos' 
+        delay(15);
+      }
+      else if(inputString.substring(1,5) == "0004") {
+        myservo4.write(inputString.substring(6,9).toInt());              // tell servo to go to position in variable 'pos' 
+        delay(15);
+      }
+
+
       
-      myservo.write(inputString.substring(7,9).toInt());              // tell servo to go to position in variable 'pos' 
-      delay(15);
+      
+//      myservo.write(inputString.substring(6,9).toInt());              // tell servo to go to position in variable 'pos' 
+//      delay(15);
         
       Serial.println("");
       // clear the string:
