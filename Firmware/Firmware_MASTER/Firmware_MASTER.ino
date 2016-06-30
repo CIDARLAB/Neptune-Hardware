@@ -8,13 +8,13 @@
 String command = "";                // a string to hold incoming command
 String sync_signal = "";            // a string to hold syncronization signal 
 char singleChar;                    // a single byte from Serial -- buffered into either 'command' and 'sync_signal', depon the STAGE
-int number_of_pumps_to_initiate;    // We'll pull this variable from the sync_signal, and then we use this variable to initiate our servos and pins
+int number_of_objects_to_initiate;    // We'll pull this variable from the sync_signal, and then we use this variable to initiate our servos and pins
 
-String STAGE = "Searching_for_sync_signal";   // THIS IS THE STATE THE FIRMWARE IS IN. POSSIBLE STATES ARE: 
-                                              // Searching for sync signal: Before the user can control the pumps, a signal must be sent 
+int STAGE = 1;                                // THIS IS THE STATE THE FIRMWARE IS IN. POSSIBLE STATES ARE: 
+                                              // 1:Searching for sync signal: Before the user can control the pumps, a signal must be sent 
                                               //                              that indicates the number of pumps to initiate. Once this 
                                               //                              signal is recieved, we move to the next state,
-                                              // Searching for commands:    After the servo objects are initiated, we move into the state 
+                                              // 2:Searching for commands:    After the servo objects are initiated, we move into the state 
                                               //                              where we search for commands to control the pumps. Here, the 
                                               //                              Arduino is searching for serial data that indicates a command. 
                                               
@@ -25,6 +25,7 @@ String servo_to_actuate_s;  // Represents the pin/pump that will be controlled
 int servo_to_actuate;
 String PWM_to_apply_s;    // Represents the PWM value that will be applied to the pin above 
 int PWM_to_apply;
+Servo *PUMP[16];
 
 void init_pins(int number_of_objects_to_initiate)
 {
@@ -36,14 +37,18 @@ void init_pins(int number_of_objects_to_initiate)
 
 void init_servos(int number_of_objects_to_initiate)
 {
-    Servo PUMP[number_of_objects_to_initiate];
+    for (int i = 0; i < number_of_objects_to_initiate; i++)
+    {
+        Servo *pump = new Servo();
+        PUMP[i] = pump;
+    }
 }
 
 void attach_servos(int number_of_objects_to_initiate)
 {
   for (int i = 0; i < number_of_objects_to_initiate; i++)
   {
-    PUMP[i].attach(i+2);
+    PUMP[i]->attach(i+2);
   }
 }
 
@@ -51,14 +56,16 @@ void set_servos_to_zero(int number_of_objects_to_initiate)
 {
   for (int i = 0; i < number_of_objects_to_initiate; i++)
   {
-    PUMP[i].write(0);
+    PUMP[i]->write(0);
     delay(200);
   }
 }
 
 // ------------------------------------- ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ -----------------------------------------------------------------
+//
 // -------------------------------------        All helper functions go above here      -----------------------------------------------------------------
 // ------------------------------------- SETUP(), LOOP(), SERIALEVENT() go below here   -----------------------------------------------------------------
+//
 // ------------------------------------- ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ -----------------------------------------------------------------
 
 void setup() 
@@ -77,7 +84,7 @@ void loop()
 {
   switch (STAGE)
   {
-    case "Searching_for_sync_signal":
+    case 1:
         if (sync_recieved)
         {
           number_of_objects_to_initiate = sync_signal.toInt();
@@ -85,10 +92,10 @@ void loop()
           init_servos(number_of_objects_to_initiate);
           attach_servos(number_of_objects_to_initiate);
           set_servos_to_zero(number_of_objects_to_initiate);
-          STAGE = "Searching_for_commands";
+          STAGE = 2;
         }
     break;
-    case "Searching_for_commands":
+    case 2:
         if (command_recieved)
         {
            servo_to_actuate_s = command.substring(1,5);
@@ -98,7 +105,7 @@ void loop()
            PWM_to_apply = PWM_to_apply_s.toInt();
            command = "";
 
-           PUMP[servo_to_actuate].write(PWM_to_apply);
+           PUMP[servo_to_actuate]->write(PWM_to_apply);
         }
     break;
   }
@@ -112,7 +119,7 @@ void serialEvent()
     switch (STAGE)
     {
       
-      case "Searching_for_sync_signal":
+      case 1:
         singleChar = (char)Serial.read();
         if (singleChar == '\n')
           {sync_recieved = true;}
@@ -120,7 +127,7 @@ void serialEvent()
           {sync_signal += singleChar;}
       break;
       
-      case "Searching_for_commands":
+      case 2:
         singleChar = (char)Serial.read();
         if (singleChar == '\n') 
           {command_recieved = true;}
