@@ -16,10 +16,9 @@ void setup() {
   // reserve 200 bytes for the inputString:
   inputString.reserve(200);
 
-  myservo1.attach(11);  // attaches the servo on pin 9 to the servo object
+  myservo1.attach(9);  // attaches the servo on pin 9 to the servo object
   myservo2.attach(10);
-  myservo3.attach(5);
-  myservo4.attach(6); 
+  myservo3.attach(11);
 }
 
 void loop() {
@@ -98,26 +97,23 @@ void loop() {
       Serial.print("Pump ");
       Serial.print(inputString.substring(1,5));
       Serial.print(" is turning to PWM value: ");
-      Serial.print(inputString.substring(5,9));
+      Serial.print(inputString.substring(6,9));
 
 
 
       if(inputString.substring(1,5) == "0001") {
-        Serial.println("got to servo1");
+        Serial.print(" got to servo1");
         myservo1.write(inputString.substring(6,9).toInt());              // tell servo to go to position in variable 'pos' 
         delay(15);
       }
       else if(inputString.substring(1,5) == "0002") {
         myservo2.write(inputString.substring(6,9).toInt());              // tell servo to go to position in variable 'pos'
-        Serial.print("at pump2"); 
+        Serial.print(" got to servo2"); 
         delay(15);
       }
       else if(inputString.substring(1,5) == "0003") {
         myservo3.write(inputString.substring(6,9).toInt());              // tell servo to go to position in variable 'pos' 
-        delay(15);
-      }
-      else if(inputString.substring(1,5) == "0004") {
-        myservo4.write(inputString.substring(6,9).toInt());              // tell servo to go to position in variable 'pos' 
+        Serial.print(" got to servo3"); 
         delay(15);
       }
 
