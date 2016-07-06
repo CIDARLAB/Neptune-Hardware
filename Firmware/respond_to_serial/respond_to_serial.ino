@@ -61,7 +61,6 @@ void loop() {
           Serial.println("Not that many pumps numnuts");
         }
       }
-
       // ensure next four inputed values are numbers, no greater than 4096
       for(byte i=5;i<9;i++)
       {
@@ -83,7 +82,6 @@ void loop() {
         error_flag = true;
         Serial.println("End line not detected");
       }
-
 */
     // if error flag is raised, stop and try again
     if (error_flag) {
@@ -149,4 +147,3 @@ void serialEvent() {
     }
   }
 }
-
