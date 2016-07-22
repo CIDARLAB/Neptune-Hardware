@@ -118,7 +118,7 @@ void setup() {
   TCCR2B = 0x05;        //Timer2 Control Reg B: Timer Prescaler set to 128
 
   // Print initalize statement
-  Serial.println("Ready to rumble!");
+  Serial.println("Ready to rumble! Enter in values from 4-9.25mL");
 }
 
 
