@@ -131,6 +131,48 @@ void loop() {
   // if initalized, proceed with main code
     if (stringComplete) {
       
+      Serial.println(inputString);
+      Serial.print(pump_zero_status);
+      Serial.print(pump_one_status);
+      Serial.print(pump_two_status);
+      Serial.println(pump_three_status);
+        
+      // if length is 2, we are doing finite control for a demo through my program
+      if (inputString.length() == 3) {
+        if (inputString[0] == '1') {
+          if (inputString[1] == 'u') {
+            pump_one_status = pump_one_status + 0.25;
+          }
+          if (inputString[1] == 'd') {
+            pump_one_status = pump_one_status - 0.25;
+          }          
+        }
+        
+        if (inputString[0] == '2') {
+          if (inputString[1] == 'u') {
+            pump_two_status += 0.25;
+          }
+          if (inputString[1] == 'd') {
+            pump_one_status = pump_one_status - 0.25;
+          }
+        }
+        if (inputString[0] == 'b') {
+          
+        }
+
+       else {
+        Serial.println("not valid 2 character input, try again");
+       }
+        
+        // clear the string:
+        inputString = "";
+        stringComplete = false;
+      }
+
+
+
+      // else we are getting command from GUI
+      else {            
         pump_number = inputString.substring(0,4).toInt();
         ml_value = inputString.substring(4,8).toFloat();
         
@@ -147,7 +189,7 @@ void loop() {
         // clear the string:
         inputString = "";
         stringComplete = false;
-      
+      }
     } 
 }
 
