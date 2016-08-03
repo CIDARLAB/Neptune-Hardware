@@ -160,10 +160,7 @@ void loop() {
           //set dispense_limit (number of steps to increment PWM by one)
         else {
           dispense_limit[IN_pump] = IN_PWM-currentPWMs[IN_pump];
-          max_count[IN_pump] = IN_Flow*1000/abs(dispense_limit[IN_pump]);
-          Serial.println("dispense limit and max count: ");
-          Serial.println(dispense_limit[IN_pump]);
-          Serial.println(max_count[IN_pump]);         
+          max_count[IN_pump] = IN_Flow*1000/abs(dispense_limit[IN_pump]);        
         }
 
         // clear the string:
@@ -173,6 +170,7 @@ void loop() {
           Serial.print("curentPWMs: ");
           Serial.println(currentPWMs[i]);
         }
+        Serial.println("--------------");
   } 
 
     // Take care of dispensors here, fires each loop
@@ -186,6 +184,13 @@ void loop() {
           max_count[i] = 0; //turning off max_count will stop the interupt from touching this
           dispense_counter[i] = 0;
           dispense_limit[i] = 0;
+          counters[i] = 0;                  // counter is reset
+          dispensers[i] = false;            // reset dispenser boolean
+          for (i=0; i < 4; i++) {
+            Serial.print("curentPWMs: ");
+            Serial.println(currentPWMs[i]);
+          }
+          Serial.println("--------------");
         }
         // if counter bellow limit, change PWM by one
         else {
@@ -199,10 +204,9 @@ void loop() {
             dispense_counter[i]++;            // increment dispense_counter   
             pwm.setPWM(i,0,currentPWMs[i]); //Send PWM to servo            
           }  
-          Serial.print("fired "); Serial.print(i); Serial.println(currentPWMs[i]);             
+          counters[i] = 0;                  // counter is reset
+          dispensers[i] = false;            // reset dispenser boolean
         }
-        counters[i] = 0;                  // counter is reset
-        dispensers[i] = false;            // reset dispenser boolean
       }
   }
 }
