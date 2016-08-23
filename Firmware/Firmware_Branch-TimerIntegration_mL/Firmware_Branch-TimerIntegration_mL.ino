@@ -194,7 +194,7 @@ void loop() {
             dispense_counter[i]++;            // increment dispense_counter   
             pwm.setPWM(i,0,currentPWMs[i]); //Send PWM to servo            
           }  
-          //Serial.print("fired "); Serial.print(i); Serial.println(currentPWMs[i]);             
+          Serial.print("fired "); Serial.print(i); Serial.println(currentPWMs[i]);             
         }
         counters[i] = 0;                  // counter is reset
         dispensers[i] = false;            // reset dispenser boolean

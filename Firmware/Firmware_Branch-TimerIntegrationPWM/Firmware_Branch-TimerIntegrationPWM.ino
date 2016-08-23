@@ -149,21 +149,16 @@ void loop() {
         IN_PWM = inputString.substring(4,8).toInt();
         IN_Flow = inputString.substring(8,12).toFloat();
 
-        //Section for valve control (no set flow rate)
+        // Valve control (no set flow rate)
         if (IN_Flow == 0) {
           currentPWMs[IN_pump] = IN_PWM;
           pwm.setPWM(IN_pump,0,currentPWMs[IN_pump]);
         }
 
-        //Section to initalize new dispensor control
-          //Calculate max_count (number of ms between each PWM step)
-          //set dispense_limit (number of steps to increment PWM by one)
+        // Despenser control initiation
         else {
-          dispense_limit[IN_pump] = IN_PWM-currentPWMs[IN_pump];
-          max_count[IN_pump] = IN_Flow*1000/abs(dispense_limit[IN_pump]);
-          Serial.println("dispense limit and max count: ");
-          Serial.println(dispense_limit[IN_pump]);
-          Serial.println(max_count[IN_pump]);         
+          dispense_limit[IN_pump] = IN_PWM-currentPWMs[IN_pump];            //set dispense_limit (number of steps to increment PWM by one)
+          max_count[IN_pump] = IN_Flow*1000/abs(dispense_limit[IN_pump]);   //Calculate max_count (number of ms between each PWM step)    
         }
 
         // clear the string:
