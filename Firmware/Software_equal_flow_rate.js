@@ -4681,85 +4681,119 @@ var even_uL_steps = function(pump_num, uL_table, PWM_table, uL_precision, curren
 
 	// Find current place and goal place in uL_table
 	var f_found = false;						// set to true when the first_uL_index is found to avoid this if statment through rest of loop
-	for (var i=0; i <= uL_table.length; i=i+2) {				// From 0 through length of uL_table in steps of 2, hitting just uL values
-		if (uL_table[i] >= current_uL && f_found == false) {		// If uL value in uL_table is greater than or equal to our current_uL (and the first_uL_index has not been found yet)
-			var first_uL_index = i;				// log index of where the uL_currently is in uL_table (logs the uL value directly above or equal to it)
-			f_found = true;						// indicate we found the first uL_index
-		}
-		if (uL_table[i] >= goal_uL) {								// If uL value in uL_table is greater than or equal to our goal_uL
-			var goal_uL_index = i;				// log index of where the uL_goal is in the uL_table (logs the uL value directly above or equal to it)
-			break;								// Stop for loop, we have the info we need
-		}
-	}
+    var going_up_uL = goal_uL - current_uL > 0;
 
-	// Iterate through uL_table from next uL_index and go specified number of steps 
-	// MUST DELAY each console.log by the variable 'seconds_per_step'	
-	var PWM_values = [] 	// Used to keep track of PWM steps to move, for record keeping and debugging
-	for (var i=first_uL_index; i < goal_uL_index; i=i+2) {		// From our current uL index in uL_table to goal index in uL_table
-		// if last step
-		if (i==goal_uL_index-2) {								// If last step
-			var end_PWM = Math.round(uL_table[i+1]);				// used for PWM tracking
-			console.log(end_PWM); 							// Send pump number and rounded PWM value to arduino
-		}
-		else {													// Normal indexes
-			console.log(Math.round(uL_table[i+1]));		// Send pump number and rounded PWM value to arduino
-		}
-		PWM_values.push(Math.round(uL_table[i+1]));				// Add rounded PWM value to PWM_values list for record keeping and debugging
-	}
+    if (going_up_uL) {                                              // if increasing in uL from current_uL to goal_uL
+        for (var i=0; i < uL_table.length; i=i+2) {				// From 0 through length of uL_table in steps of 2, hitting just uL values
+            console.log(uL_table[i])
+        	if (uL_table[i] >= current_uL && f_found == false) {		// If uL value in uL_table is greater than or equal to our current_uL (and the first_uL_index has not been found yet)
+        		var first_uL_index = i;				// log index of where the uL_currently is in uL_table (logs the uL value directly above or equal to it)
+        		f_found = true;						// indicate we found the first uL_index
+        	}
+            if (uL_table[i] >= goal_uL) {                               // If uL value in uL_table is greater than or equal to our goal_uL
+                var goal_uL_index = i;              // log index of where the uL_goal is in the uL_table (logs the uL value directly above or equal to it)
+                break;                              // Stop for loop, we have the info we need
+            }
+        }
+    }
+
+    else {                                                          // if decreasing in uL from current_uL to goal_uL
+        for (var i=uL_table.length-2; i >= 0; i=i-2) {                // From length of uL_table through 0 in steps of 2, hitting just uL values
+            console.log(i)
+            console.log(uL_table[i])
+            if (uL_table[i] <= current_uL && f_found == false) {        // If uL value in uL_table is less than or equal to our current_uL (and the first_uL_index has not been found yet)
+                var first_uL_index = i;             // log index of where the uL_currently is in uL_table (logs the uL value directly above or equal to it)
+                f_found = true;                     // indicate we found the first uL_index
+            }
+            if (uL_table[i] <= goal_uL) {                               // If uL value in uL_table is greater than or equal to our goal_uL
+                var goal_uL_index = i;              // log index of where the uL_goal is in the uL_table (logs the uL value directly above or equal to it)
+                break;                              // Stop for loop, we have the info we need
+            }
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
+
+    // Iterate through uL_table from next uL_index and go specified number of steps 
+    // MUST DELAY each console.log by the variable 'seconds_per_step'	
+    var PWM_values = [] 	// Used to keep track of PWM steps to move, for record keeping and debugging
+    if (going_up_uL) {                  // if increasing in uL from current_uL to goal_uL
+        for (var i=first_uL_index; i <= goal_uL_index; i=i+2) {		// From our current uL index in uL_table to goal index in uL_table
+        	// if last step
+        	if (i==goal_uL_index) {								// If last step
+                if (Math.abs(uL_table[i] - goal_uL) < Math.abs(uL_table[i-2] - goal_uL)) {  // if this uL value from uL_table is closer to goal_uL than the previous one
+                    var end_PWM = Math.round(uL_table[i+1]);                // used for PWM tracking
+                    PWM_values.push(Math.round(uL_table[i+1]));             // Add rounded PWM value to PWM_values list for record keeping and debugging
+                    console.log(end_PWM);                                   //////////// Send pump number and rounded PWM value to arduino     
+                }
+                else {
+                    var end_PWM = Math.round(uL_table[i-1]);                // used for PWM tracking
+                }
+        	}
+            // If normal step
+        	else {													// Normal indexes
+        		console.log(Math.round(uL_table[i+1]));		                /////////// Send pump number and rounded PWM value to arduino
+                PWM_values.push(Math.round(uL_table[i+1]));             // Add rounded PWM value to PWM_values list for record keeping and debugging
+        	}
+        }
+    }
+
+
+    else {                  // if decreasing in uL from current_uL to goal_uL
+        for (var i=first_uL_index; i >= goal_uL_index; i=i-2) {     // From our current uL index in uL_table to goal index in uL_table
+            // if last step
+            if (i==goal_uL_index) {                             // If last step
+                if (Math.abs(uL_table[i] - goal_uL) < Math.abs(uL_table[i+2] - goal_uL)) {  // if this uL value from uL_table is closer to goal_uL than the previous one
+                    var end_PWM = Math.round(uL_table[i+1]);                // used for PWM tracking
+                    PWM_values.push(Math.round(uL_table[i+1]));             // Add rounded PWM value to PWM_values list for record keeping and debugging
+                    console.log(end_PWM);                                   //////////// Send pump number and rounded PWM value to arduino     
+                }
+                else {
+                    var end_PWM = Math.round(uL_table[i+3]);                // used for PWM tracking
+                }
+            }
+            // If normal step
+            else {                                                  // Normal indexes
+                console.log(Math.round(uL_table[i+1]));                     /////////// Send pump number and rounded PWM value to arduino
+                PWM_values.push(Math.round(uL_table[i+1]));             // Add rounded PWM value to PWM_values list for record keeping and debugging
+            }
+        }
+    }
+    
 
 
 
+
+
+
+
+    // DEBUGGING
 	// Finding uL total dispensed and error 
 	console.log("")											// debugging
 
-	var list_a = []
-	for (var i=0; i<= PWM_table.length;i=i+2) {				// Iterate through PWM values in PWM table
-		for (var j=0; j< PWM_values.length; j++) {				// Iterate through list of PWM_values we are sending out to Arduino
-			if (PWM_table[i] == PWM_values[j]) {					// If a PWM value in our list equals a PWM value in the PWM table:
-				console.log(PWM_values[j])								// Log PWM value
-				console.log(PWM_table[i+1])								// Log corrosponding uL value from PWM table
-				console.log("")											// debugging
-				list_a.push(PWM_values[j],PWM_table[i+1])
-				break;													// Break this loop to move to 
-			}
-		}
-	}
-
-	var list_b = []
 	for (var i=0; i < PWM_values.length; i++) {				// Iterate through list of PWM_values we are sending out to Arduino
 		for (var j=0; j <= PWM_table.length; j=j+2) {			// Iterate through PWM values in PWM table
 			if (PWM_table[j] == PWM_values[i]) {					// If a PWM value in our list equals a PWM value in the PWM table:
 				console.log(PWM_values[i])								// Log PWM value
 				console.log(PWM_table[j+1])								// Log corrosponding uL value from PWM table
 				console.log("")											// debugging
-				list_b.push(PWM_values[i],PWM_table[j+1])
 				break;													// Break this loop to move to 
 			}
 		}
 	}
 
 
-	/*var test = function arraysEqual(arr1, arr2) {
-	    if(arr1.length !== arr2.length)
-	        return false;
-	    for(var i = arr1.length; i--;) {
-	        if(arr1[i] !== arr2[i])
-	            return false;
-	    }
-	}
-
-	console.log(arraysEqual(list_a,list_b))
-	*/
-	console.log("")											  // debugging
 	console.log(num_steps,steps_per_second,seconds_per_step); // debugging
 };
 
 
 
 
-var create_table_outputs = create_uL_table(30);
+var create_table_outputs = create_uL_table(32.6);
 var PWM_table = create_table_outputs.PWM_table;
 var uL_table = create_table_outputs.uL_table;
 
+even_uL_steps(1,uL_table,PWM_table,32.6,2878,8016,30);
+//even_uL_steps(1,uL_table,PWM_table,32.6,8016,2920,30);
 
-even_uL_steps(1,uL_table,PWM_table,30,2878,9125,30);
+
