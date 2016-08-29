@@ -73,7 +73,10 @@ int IN_pump;            // stores pump number from GUI
 int IN_PWM;             // stores PWM from GUI
 float IN_Flow;            // stores Flow rate from GUI
 
-
+// Start Even uL Dispension example
+boolean start_even_fluid_dispension = false;
+boolean start_even_PWM_thing = false;
+int even_uLs[] = {193,199,203,207,210,213,215,218,220,222,224,226,228,230,232,234,235,237,239,240,242,243,245,246,248,249,250,252,253,254,255,257,258,259,260,262,263,264,265,266,267,269,270,271,272,273,274,275,276,277,278,279,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,313,314,315,316,317,318,319,320,321,322,323,324,325,326,326,327,328,329,330,331,332,333,334,335,336,337,338,338,339,340,341,342,343,344,345,346,347,348,349,350,351,352,353,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371,372,373,374,375,376,377,378,380,381,382,383,384,385,386,388,389,390,391,392,394,395,396,397,399,400,401,403,404,405,407,408,410,411,412,414,415,417,419,420,422,424,425,427,429,431,433,435,437,439,441,443,446,448,451,454,457,460,463,467,472,477};
 /* Serial input variables
  * 
  */
@@ -143,33 +146,48 @@ void setup() {
 
 void loop() { 
     if (stringComplete) {
-      
-        // Get inputs
-        IN_pump = inputString.substring(0,4).toInt();
-        IN_PWM = inputString.substring(4,8).toInt();
-        IN_Flow = inputString.substring(8,12).toFloat();
-
-        // Valve control (no set flow rate)
-        if (IN_Flow == 0) {
-          currentPWMs[IN_pump] = IN_PWM;
-          pwm.setPWM(IN_pump,0,currentPWMs[IN_pump]);
+        if( inputString.substring(0,6) == "DouguL") {
+          start_even_fluid_dispension = true;
+          // clear the string:
+          inputString = "";
+          stringComplete = false;
         }
 
-        // Despenser control initiation
+        else if ( inputString.substring(0,7) == "DougPWM") {
+          start_even_PWM_thing = true;
+          // clear the string:
+          inputString = "";
+          stringComplete = false;
+        }
+
         else {
-          dispense_limit[IN_pump] = IN_PWM-currentPWMs[IN_pump];            //set dispense_limit (number of steps to increment PWM by one)
-          max_count[IN_pump] = IN_Flow*1000/abs(dispense_limit[IN_pump]);   //Calculate max_count (number of ms between each PWM step)    
-        }
-
-        // clear the string:
-        inputString = "";
-        stringComplete = false;
-        for (i=0; i < 4; i++) {
-          Serial.print("curentPWMs: ");
-          Serial.println(currentPWMs[i]);
+          // Get inputs
+          IN_pump = inputString.substring(0,4).toInt();
+          IN_PWM = inputString.substring(4,8).toInt();
+          IN_Flow = inputString.substring(8,12).toFloat();
+  
+          // Valve control (no set flow rate)
+          if (IN_Flow == 0) {
+            currentPWMs[IN_pump] = IN_PWM;
+            pwm.setPWM(IN_pump,0,currentPWMs[IN_pump]);
+          }
+  
+          // Despenser control initiation
+          else {
+            dispense_limit[IN_pump] = IN_PWM-currentPWMs[IN_pump];            //set dispense_limit (number of steps to increment PWM by one)
+            max_count[IN_pump] = IN_Flow*1000/abs(dispense_limit[IN_pump]);   //Calculate max_count (number of ms between each PWM step)    
+          }
+  
+          // clear the string:
+          inputString = "";
+          stringComplete = false;
+          for (i=0; i < 4; i++) {
+            Serial.print("curentPWMs: ");
+            Serial.println(currentPWMs[i]);
+          }
         }
   } 
-
+    
     // Take care of dispensors here, fires each loop
     // Checks each dispensor for True and set back to false
     for (i=0; i < 4; i++) {
@@ -194,12 +212,37 @@ void loop() {
             dispense_counter[i]++;            // increment dispense_counter   
             pwm.setPWM(i,0,currentPWMs[i]); //Send PWM to servo            
           }  
-          Serial.print("fired "); Serial.print(i); Serial.println(currentPWMs[i]);             
+          Serial.print(i); Serial.print(" fired "); Serial.println(currentPWMs[i]);             
         }
         counters[i] = 0;                  // counter is reset
         dispensers[i] = false;            // reset dispenser boolean
       }
   }
+
+  // Example for other one 000101800030
+  if (start_even_PWM_thing) {
+    currentPWMs[3] = 193;
+    pwm.setPWM(3,0,193);
+    inputString = "000304770030";
+    start_even_PWM_thing = false;
+  }
+  
+  // Start even fluid dispension
+  // Hardcoded table to show Doug what's up
+  if (start_even_fluid_dispension) {
+    for (i=0; i < sizeof(even_uLs)/sizeof(int); i++) {
+      currentPWMs[3] = even_uLs[i];
+      pwm.setPWM(3,0,even_uLs[i]);
+      Serial.println(even_uLs[i]);
+      delay(144);
+    }
+    Serial.println("Demo Done");
+    start_even_fluid_dispension = false;
+  }
+
+
+
+  
 }
 
 

@@ -4636,48 +4636,50 @@ function PWM2rad(PWM) {
 
 
 var create_uL_table = function(uL_precision) {
-	var uL_min = mL_min*1000;
-	var uL_range = mL_range*1000;
+	var uL_min = mL_min*1000;		// convert incoming variables from mL to uL
+	var uL_range = mL_range*1000; 	// convert incoming variables from mL to uL
+
 	// Create PWM_table
 	var PWM_table = [];
-	for (var i=PWM_min; i<=PWM_max; i++) {
-		PWM_table.push(i);
-		var mL_temp = mL_max - ((( r*Math.cos(PWM2rad(i)) ) + Math.sqrt(Math.pow(b,2) - ( Math.pow((r*Math.sin(PWM2rad(i))+d),2) ))) - X_min)/a;	
-		var uL_temp = Math.round(mL_temp*10000)/10;
-		PWM_table.push(uL_temp);
+	for (var i=PWM_min; i<=PWM_max; i++) {		// From PWM_min value to PWM_max value
+		PWM_table.push(i);						// Add current PWM value to PWM_table
+		var mL_temp = mL_max - ((( r*Math.cos(PWM2rad(i)) ) + Math.sqrt(Math.pow(b,2) - ( Math.pow((r*Math.sin(PWM2rad(i))+d),2) ))) - X_min)/a;	// Calculate mL value with formula of motion
+		var uL_temp = Math.round(mL_temp*10000)/10;		// convert to uL and round to first decimal place
+		PWM_table.push(uL_temp);				// Add uL value to PWM_table
 	};
 
 	// create uL_table
 	var uL_table = [];
-	for (var i=uL_min; i<uL_range+uL_min+uL_precision; i=i+uL_precision) {
-		// round i (which is current uL value)
-		var uL_current = i
-		uL_current = Math.round(uL_current*100)/100;
+	for (var i=uL_min; i<uL_range+uL_min+uL_precision; i=i+uL_precision) {		// From uL_min (a given) to uL_min+uL_range! uL_precision added on to allow last uL value to be iterated through. Increase by steps of uL_precision
+		// rename i (which is current uL value)
+		var uL_current = i 									// rename i to something more readable
+		uL_current = Math.round(uL_current*100)/100;		// round to 2 decimal places
 
-		uL_table.push(uL_current); // Add the current uL value to table
+		uL_table.push(uL_current); 							// Add the current uL value to uL_table
 
-		// Add PWM values
+		// Find PWM values
+
+		// Add First PWM value, matched easily
 		if (i == uL_min) {		// We know the first value, which can't be found with linear interpolation
 			uL_table.push(PWM_table[0]);
 			continue;
 		}
-		// Linear interpolation to find other values
+		// Linear interpolation to find other PWM values
 		// Skip to 2nd value as we already logged the first
-		for (var j = 3; j < PWM_table.length; j=j+2) {	// Add PWM value to table via linear interpolation
-    		if (PWM_table[j] >= uL_current && j%2 > 0) { 		// If uL value in PWM table is greater than or equal to our current uL value, find PWM inbetween PWMs in PWM_table
-    			var PWM_between = PWM_table[j-3] + (uL_current - PWM_table[j-2])*((PWM_table[j-1]-PWM_table[j-3])/(PWM_table[j]-PWM_table[j-2]));
-    			var PWM_between = Math.round(PWM_between*100)/100;
-    			uL_table.push(PWM_between);
-    			//console.log([PWM_table[j],PWM_table[j-1],PWM_table[j-2],PWM_table[j-3],uL_current,PWM_between]);	
+		for (var j = 3; j <= PWM_table.length; j=j+2) {			// Iterate through uL values in PWM_table (start at 2nd uL value, index 3. Go length of PWM table. Increase by 2 to avoid looking at PWM values)
+    		if (PWM_table[j] >= uL_current && j%2 > 0) { 		// If uL value in PWM_table is greater than or equal to our current uL value, find PWM inbetween PWMs in PWM_table
+    			var PWM_between = PWM_table[j-3] + (uL_current - PWM_table[j-2])*((PWM_table[j-1]-PWM_table[j-3])/(PWM_table[j]-PWM_table[j-2]));	// Find PWM value via linear interpolation
+    			var PWM_between = Math.round(PWM_between*100)/100;	// Round calculated PWM value to 2 decimal places
+    			uL_table.push(PWM_between);						// Add calculated PWM value to table
     			break;		
     		}    
   		}
 	};
-  	uL_table.push(PWM_max) // i don't know why this isn't being added!
+  	uL_table.push(PWM_max) // Add last PWM value, not calculated above with linear interpolation
 
 	return {
-		PWM_table: PWM_table,
-		uL_table: uL_table
+		PWM_table: PWM_table,		// Return PWM_table
+		uL_table: uL_table 			// Return uL_table
 	};
 };
 
@@ -4740,81 +4742,86 @@ var even_uL_steps = function(pump_num, uL_table, PWM_table, uL_precision, curren
 	var seconds_per_step = time_sec/num_steps; // needed for delay between step
 
 	// Find current place and goal place in uL_table
-	var f_found = false;
-	for (var i=0; i <= uL_table.length; i=i+2) {
-		if (uL_table[i] > current_uL && f_found == false) {
-			var first_uL_index = i;
-			f_found = true;
+	var f_found = false;						// set to true when the first_uL_index is found to avoid this if statment through rest of loop
+	for (var i=0; i <= uL_table.length; i=i+2) {				// From 0 through length of uL_table in steps of 2, hitting just uL values
+		if (uL_table[i] >= current_uL && f_found == false) {		// If uL value in uL_table is greater than or equal to our current_uL (and the first_uL_index has not been found yet)
+			var first_uL_index = i;				// log index of where the uL_currently is in uL_table (logs the uL value directly above or equal to it)
+			f_found = true;						// indicate we found the first uL_index
 		}
-		if (uL_table[i] > goal_uL) {
-			var goal_uL_index = i;
-			break;
+		if (uL_table[i] >= goal_uL) {								// If uL value in uL_table is greater than or equal to our goal_uL
+			var goal_uL_index = i;				// log index of where the uL_goal is in the uL_table (logs the uL value directly above or equal to it)
+			break;								// Stop for loop, we have the info we need
 		}
 	}
 
 	// Iterate through uL_table from next uL_index and go specified number of steps 
 	// MUST DELAY each console.log by the variable 'seconds_per_step'	
-	for (var i=first_uL_index; i < first_uL_index+goal_uL_index; i=i+2) {
-		// Basically an if else; always goes to the else until last step
+	var PWM_values = [] 	// Used to keep track of PWM steps to move, for record keeping and debugging
+	for (var i=first_uL_index; i < goal_uL_index; i=i+2) {		// From our current uL index in uL_table to goal index in uL_table
+		// if last step
+		if (i==goal_uL_index-2) {								// If last step
+			var end_PWM = Math.round(uL_table[i+1]);				// used for PWM tracking
+			console.log(end_PWM); 							// Send pump number and rounded PWM value to arduino
+		}
+		else {													// Normal indexes
+			console.log(Math.round(uL_table[i+1]));		// Send pump number and rounded PWM value to arduino
+		}
+		PWM_values.push(Math.round(uL_table[i+1]));				// Add rounded PWM value to PWM_values list for record keeping and debugging
+	}
 
-		// if last step, do fancy calculations
-		if (i==first_uL_index+goal_uL_index-2) {
-			// iterate through PWM table PWM values
-			for (var j=0; j<=PWM_table.length;j=j+2) {	// Find if we should round last PWM up or down
-				if(Math.ceil(uL_table[i+1]) == PWM_table[j]) { 	// if our last PWM value (rounded UP) is found in PWM table:
-					if (Math.abs(goal_uL - PWM_table[j+1]) < Math.abs(goal_uL - PWM_table[j-1])) { 	// If rounded up PWM value uL value is closer to goal_uL, go with rounded up PWM
-						console.log(PWM_table[j+1]);			//uL value
-						console.log(Math.ceil(uL_table[i+1])); 	//PWM value
-						console.log("");
-						console.log("aaaaaaaa")
-						var end_PWM = Math.ceil(uL_table[i+1]);	// used for PWM tracking and debugging
-					}
-					else {	// otherwise round down
-						console.log(PWM_table[j-1]);				//uL value
-						console.log(Math.floor(uL_table[i+1])); 	//PWM value
-						console.log("");
-						console.log("zzzzzzzz")
-						var end_PWM = Math.floor(uL_table[i+1]);	// used for PWM tracking and debugging
-					}
-					break; // break for loop as we found what PWM value to use
-				}
+
+
+	// Finding uL total dispensed and error 
+	console.log("")											// debugging
+
+	var list_a = []
+	for (var i=0; i<= PWM_table.length;i=i+2) {				// Iterate through PWM values in PWM table
+		for (var j=0; j< PWM_values.length; j++) {				// Iterate through list of PWM_values we are sending out to Arduino
+			if (PWM_table[i] == PWM_values[j]) {					// If a PWM value in our list equals a PWM value in the PWM table:
+				console.log(PWM_values[j])								// Log PWM value
+				console.log(PWM_table[i+1])								// Log corrosponding uL value from PWM table
+				console.log("")											// debugging
+				list_a.push(PWM_values[j],PWM_table[i+1])
+				break;													// Break this loop to move to 
 			}
 		}
-		else {
-			console.log(uL_table[i]);
-			console.log(uL_table[i+1]);
-			console.log("");
+	}
+
+	var list_b = []
+	for (var i=0; i < PWM_values.length; i++) {				// Iterate through list of PWM_values we are sending out to Arduino
+		for (var j=0; j <= PWM_table.length; j=j+2) {			// Iterate through PWM values in PWM table
+			if (PWM_table[j] == PWM_values[i]) {					// If a PWM value in our list equals a PWM value in the PWM table:
+				console.log(PWM_values[i])								// Log PWM value
+				console.log(PWM_table[j+1])								// Log corrosponding uL value from PWM table
+				console.log("")											// debugging
+				list_b.push(PWM_values[i],PWM_table[j+1])
+				break;													// Break this loop to move to 
+			}
 		}
 	}
 
 
-
-	// Debugging 
-	/*
-	for (var i=0; i<= PWM_table.length;i=i+2) {
-		if(end_PWM == PWM_table[i]) {
-			console.log(PWM_table[i+1])
-		}
+	/*var test = function arraysEqual(arr1, arr2) {
+	    if(arr1.length !== arr2.length)
+	        return false;
+	    for(var i = arr1.length; i--;) {
+	        if(arr1[i] !== arr2[i])
+	            return false;
+	    }
 	}
-	console.log("Total uL dispensed: ",end_PWM)
 
-
-	// Send output to Serial
-	console.log(uL_table)
-	console.log(PWM_table)
-
-	console.log(num_steps,steps_per_second,seconds_per_step);
+	console.log(arraysEqual(list_a,list_b))
 	*/
-	console.log(end_PWM);
-	//console.log(PWM_table);
+	console.log("")											  // debugging
+	console.log(num_steps,steps_per_second,seconds_per_step); // debugging
 };
 
 
 
 
-var create_table_outputs = create_uL_table(40);
+var create_table_outputs = create_uL_table(30);
 var PWM_table = create_table_outputs.PWM_table;
 var uL_table = create_table_outputs.uL_table;
 
 
-even_uL_steps(1,uL_table,PWM_table,40,2880,3100,30);
+even_uL_steps(1,uL_table,PWM_table,30,2878,9125,30);
