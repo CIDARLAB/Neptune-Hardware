@@ -4685,7 +4685,6 @@ var even_uL_steps = function(pump_num, uL_table, PWM_table, uL_precision, curren
 
     if (going_up_uL) {                                              // if increasing in uL from current_uL to goal_uL
         for (var i=0; i < uL_table.length; i=i+2) {				// From 0 through length of uL_table in steps of 2, hitting just uL values
-            console.log(uL_table[i])
         	if (uL_table[i] >= current_uL && f_found == false) {		// If uL value in uL_table is greater than or equal to our current_uL (and the first_uL_index has not been found yet)
         		var first_uL_index = i;				// log index of where the uL_currently is in uL_table (logs the uL value directly above or equal to it)
         		f_found = true;						// indicate we found the first uL_index
@@ -4699,8 +4698,6 @@ var even_uL_steps = function(pump_num, uL_table, PWM_table, uL_precision, curren
 
     else {                                                          // if decreasing in uL from current_uL to goal_uL
         for (var i=uL_table.length-2; i >= 0; i=i-2) {                // From length of uL_table through 0 in steps of 2, hitting just uL values
-            console.log(i)
-            console.log(uL_table[i])
             if (uL_table[i] <= current_uL && f_found == false) {        // If uL value in uL_table is less than or equal to our current_uL (and the first_uL_index has not been found yet)
                 var first_uL_index = i;             // log index of where the uL_currently is in uL_table (logs the uL value directly above or equal to it)
                 f_found = true;                     // indicate we found the first uL_index
