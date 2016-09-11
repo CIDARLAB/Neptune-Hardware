@@ -1,8 +1,10 @@
 #include <Wire.h>                //enable I2C.
 /*     Addressing    */
 const int MAX_NUMBER_OF_SENSORS = 101;
-char addressMatrix[MAX_NUMBER_OF_SENSORS][2];   //holds the type of sensor at index/address with 2 chars
-char responseMatrix[MAX_NUMBER_OF_SENSORS][8]; //holds the most recent data from the specic sensor from the last read that was made
+const int TYPE_IDENTIFIER_LENGTH = 2;
+const int RESPONSE_LENGTH = 8;
+char addressMatrix[MAX_NUMBER_OF_SENSORS][TYPE_IDENTIFIER_LENGTH];   //holds the type of sensor at index/address with 2 chars
+char responseMatrix[MAX_NUMBER_OF_SENSORS][RESPONSE_LENGTH]; //holds the most recent data from the specic sensor from the last read that was made
 /*      -------      */
 /*   Timing Delays   */
 int LONG_DELAY = 1800;
@@ -29,18 +31,17 @@ const int COMPLETED = 3; //completed a read or a calibration and will send packe
 /*     -------     */
 /*  Sensor Reading */
 int continuousReadTimeInterval = 1; // in Minutes
-bool shouldExecuteNextRead = true;
+bool shouldExecuteNextRead = false;
 /*     -------     */
 /*  Time Stamping */
-int minutes = 0;
-int seconds = 0;
+unsigned int minutes = 0;
+unsigned int seconds = 0;
 int lastReadTime = 0; //in minutes
 bool firstSample = true;
 /* -------------  */
 /*  ATLAS Specific Commands  */
 char readCommand[] = {'r'};
 /*   --------- * /
-char readCommand[] = {'r'};
 //this is just to initialize the array for what I have.
 /* [ ['**'], ["PH"], ["DO"]]  -> this type of format where the index is the I2C address
 */
@@ -73,19 +74,19 @@ ISR(TIMER2_OVF_vect) {
     switch (systemState)
     {
       case STANDBY:
-        Serial.println("Stand By");
+        //Serial.println("SB");
         break;
       case SINGLE_READ:
-        Serial.println("READ S");
+        //Serial.println("RS");
         break;
       case CONTINUOUS_READ:
-        Serial.println("READ C");
+        //Serial.println("RC");
         break;
       case COMPLETED:
-        Serial.println("COMPLETE");
+        //Serial.println("C");
         break;
       default:
-        Serial.println("ERR");
+        //Serial.println("ER");
         break;
     }
     statusCount = 0;
@@ -100,16 +101,16 @@ void setup()                    //hardware initialization.
 {
   Serial.begin(9600);           //enable serial port.
   Wire.begin();                 //enable I2C port.
-
   command.reserve(20);
-
   initializeSensorAddressArray();
   char code12[]  = {'P', 'H'};
   char code50[]  = {'P', 'H'};
   char code100[] = {'D', 'O'};
+  char code20[] = {'P','H'};
   setSensorAtAddressIndex(12, code12);
   setSensorAtAddressIndex(50, code50);
   setSensorAtAddressIndex(100, code100);
+  setSensorAtAddressIndex(20, code20);
 
   //Setup Timer2 to fire every 1ms
   TCCR2B = 0x00;        //Disbale Timer2 while we set it up
@@ -118,15 +119,10 @@ void setup()                    //hardware initialization.
   TIMSK2 = 0x01;        //Timer2 INT Reg: Timer2 Overflow Interrupt Enable
   TCCR2A = 0x00;        //Timer2 Control Reg A: Normal port operation, Wave Gen Mode normal
   TCCR2B = 0x05;        //Timer2 Control Reg B: Timer Prescaler set to 128
-
-
 }
-
 
 //NEED TO LOOK INTO INTERRUPT FOR SERIAL RECEIVE. in there quit a process if we want it to.
 void loop() {                   //the main loop.
-
-
   switch (systemState) {
     case STANDBY:
       //this sets timing parameters for the sensors and stuff like that
@@ -142,11 +138,10 @@ void loop() {                   //the main loop.
       //NEED TO USE THE RESPONSE CODES TO EITHER TRY AGAIN, GIVE UP, OR CONTINUE
       executeCommandOnAllSensors(readCommand, 1);
       readDataFromAllSensors();
+      shouldExecuteNextRead = false;
       systemState = COMPLETED;
       break;
-
     case CONTINUOUS_READ:
-      
       if ( ((minutes - lastReadTime) >= continuousReadTimeInterval) || firstSample){
         firstSample = false;
         lastReadTime = minutes;
@@ -154,7 +149,6 @@ void loop() {                   //the main loop.
         readDataFromAllSensors();
         systemState = COMPLETED;
       } 
-
       break;
     case COMPLETED:
       sendDataPacketsToComputer();
@@ -169,34 +163,30 @@ void loop() {                   //the main loop.
       //unknown state UHHH
       break;
   }
-
-
 }
 void executeCommandOnAllSensors(char command[] , int len) { //I wish this was swift for function declarations at least...
   //need to figure out a way to quit
   //implement the
-
   if (command[0] == 'c' || command[0] == 'r')time_ = LONG_DELAY;    //if a command has been sent to calibrate or take a reading we wait a longer delay so that the circuit has time to take the reading.
   else time_ = SHORT_DELAY;    //if any other command has been sent we wait a shorter delay
   int address;
   for (address = 0; address < MAX_NUMBER_OF_SENSORS; address++) {
     //has an address been configured? if so CHOOSE IT
     if (addressMatrix[address][0] != '*' && addressMatrix[address][1] != '*') {
-      Serial.print("Address: "); Serial.print(address); Serial.print(" Command: ");
+      //Serial.print("Address: "); Serial.print(address); Serial.print(" Command: ");
       int i;
       for (i = 0; i < len ; i++) {
         if (command[i] == '\r') break;
         else {
-          Serial.print(command[i]);
+          //Serial.print(command[i]);
         }
       }
-      Serial.print(" Type: "); Serial.print(addressMatrix[address][0]); Serial.println(addressMatrix[address][1]);
+      //Serial.print(" Type: "); Serial.print(addressMatrix[address][0]); Serial.println(addressMatrix[address][1]);
       Wire.beginTransmission(address); //call the circuit by its ID number.
       Wire.write(command, len);        //transmit the command that was sent through the serial port.
       Wire.endTransmission();          //end the I2C data transmission.
     }
   }
-
   delay(time_);
   //Somewhere else I'll send the data and return to standby or processing
 }
@@ -206,22 +196,21 @@ bool readDataFromAllSensors() {
   for (address = 0 ; address < MAX_NUMBER_OF_SENSORS ; address++) {
     if (addressMatrix[address][0] != '*' && addressMatrix[address][1] != '*') {
       Wire.requestFrom(address, 20, 1); //call the circuit and request 20 bytes (this may be more than we need)
-      Serial.print("A: ");
-      Serial.println(address);
+      //Serial.print("A: ");
+      //Serial.println(address);
       code = Wire.read();             //the first byte is the response code, we read this separately.
-
       switch (code) {                 //switch case based on what the response code is.
         case 1:                       //decimal 1.
-          Serial.println("Success");  //means the command was successfully received
+          //Serial.println("Success");  //means the command was successfully received
           break;
         case 2:                        //decimal 2.
-          Serial.println("Failed");    //means the command has failed.
+          //Serial.println("Failed");    //means the command has failed.
           break;                         //exits the switch case.
         case 254:                       //decimal 254.
-          Serial.println("Pending");    //means the command has not yet been finished calculating.
+          //Serial.println("Pending");    //means the command has not yet been finished calculating.
           break;
         case 255:                      //decimal 255.
-          Serial.println("No Data");   //means there is no further data to send.
+          //Serial.println("No Data");   //means there is no further data to send.
           break;
       }
       bool shouldLoop = true;
@@ -230,12 +219,16 @@ bool readDataFromAllSensors() {
         responseMatrix[address][sensor_data_counter] = in_char; //load this byte into the index for the response array.
         sensor_data_counter += 1;                               //increase the counter for the array element.
         if (in_char == 0) {                                     //if we see that we have been sent a null char to signify the end of the transmission.
+          int i; 
+          for (i = sensor_data_counter; i < RESPONSE_LENGTH; i++){
+            responseMatrix[address][sensor_data_counter] = '\0';
+          } 
           sensor_data_counter = 0;                              //reset the counter i to 0.
           Wire.endTransmission();                               //end the I2C data transmission.
           shouldLoop = false;
         }
       }
-      Serial.println(responseMatrix[address]);          //print the data
+      //Serial.println(responseMatrix[address]);          //print the data
       delay(time_);
     }
   }
@@ -267,7 +260,42 @@ void serialEvent() {
 
 void sendDataPacketsToComputer() {
   //implement
-  Serial.println("Data Sent");
+  //Serial.print("Data Sent at Time: ");
+  //Serial.print( minutes ); Serial.print(":"); Serial.println(seconds);
+  //need to create the data packet to send each packet 
+  int address;
+  for (address = 0; address < MAX_NUMBER_OF_SENSORS; address++){
+     if (addressMatrix[address][0] != '*' && addressMatrix[address][1] != '*') {
+       int currentMinutes = minutes;
+       int currentSeconds = seconds;
+       //valid sensor do stuff
+       //create my packet of data
+       //Address and Type
+       Serial.print(address); Serial.print('S'); Serial.print(addressMatrix[address][0]); Serial.print(addressMatrix[address][1]); 
+       //Value
+       int i;
+       for (i = 0; i < RESPONSE_LENGTH; i++){
+         Serial.print(responseMatrix[address][i]);
+       }
+       Serial.print('T');
+       //Time Stamp Minutes
+       if (currentMinutes < 10) {
+         Serial.print('0'); Serial.print(currentMinutes);
+       } else {
+         Serial.print(currentMinutes);
+       }
+       //Time Stamp Seconds
+       if (currentSeconds < 10) {
+         Serial.print('0'); Serial.print(currentSeconds);
+       } else {
+         Serial.print(currentSeconds);
+       }
+       Serial.print('\r');
+     } 
+  }
+  
+   //don't care about the fact that the address has not been set.
+   
 }
 
 //each address corresponds to the index of the array (except address 0, that IS NOT ALLOWED)
@@ -310,13 +338,21 @@ void processComputerData(String rawString, int len) {
 
   if ( commandParsed == "read" ) {
     systemState = SINGLE_READ;
+    resetSystemClock();
   } else if (commandParsed == "readc") {
     continuousReadTimeInterval = parameters[0].toInt();
     shouldExecuteNextRead = true;
     systemState = CONTINUOUS_READ;
+    resetSystemClock();
     lastReadTime = minutes;
   }
   else if ( commandParsed == "cal") {
     //Serial.println("Cal Understood");
   }
+}
+
+void resetSystemClock(){
+  minutes = 0;
+  seconds = 0;
+  count = 0;
 }
