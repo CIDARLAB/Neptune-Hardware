@@ -12,5 +12,7 @@ Mechanical Designs Components:
 
 6) Syringe holder
 
+7) Syringe attachment: missing
+
 
 ABS_iGEM.ini : Initialization file for using the Ultimaker to be loaded in Cura to generate GCode
