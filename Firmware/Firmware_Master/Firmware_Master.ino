@@ -55,12 +55,12 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 */
     int j; // iterates through loops in trigger
     int i; // iterates through loops in main
-    int currentPWMs[4]       = {307,307,307,307}; // start at 1.5ms pulses to center (for analog! 50Hz refresh)
-    int counters[4]          = {0};
-    int max_count[4]         = {0};
-    bool dispensers[4]       = {false};
-    int dispense_counter[4]   = {0};
-    int dispense_limit[4]    = {0};
+    int currentPWMs[5]       = {307,307,307,307}; // start at 1.5ms pulses to center (for analog! 50Hz refresh)
+    int counters[5]          = {0};
+    int max_count[5]         = {0};
+    bool dispensers[5]       = {false};
+    int dispense_counter[5]   = {0};
+    int dispense_limit[5]    = {0};
     
     // LED variables 
     unsigned int LEDtoggle = 0;  //used to keep the state of the LED
@@ -94,7 +94,7 @@ ISR(TIMER2_OVF_vect) {
 
 
   // Quick loop to set dispense variables to true or false
-  for (j=0; j < 4; j++) {
+  for (j=0; j < 5; j++) {
     if (max_count[j] == 0)             //if max_count is not set (equal to 0) check next trigger
       continue;
       
@@ -117,13 +117,14 @@ void setup() {
   // blink an LED for error checking
   pinMode(53,OUTPUT);
   
-  // initialize serial communication
+  // initialize seria l communication
   Serial.begin(9600);
   inputString.reserve(200);   // reserve 200 bytes for the inputString
 
   // Initalize PWM for motor control shield
   pwm.begin(); 
   pwm.setPWMFreq(50);  // Analog servos run at ~50 Hz updates, 20ms
+  //pwm.setPWMFreq(300);
   yield();
   
   //Setup Timer2 to fire every 1ms
@@ -149,6 +150,13 @@ void loop() {
         IN_PWM = inputString.substring(4,8).toInt();
         IN_Flow = inputString.substring(8,12).toFloat();
 
+        if (IN_pump == 5555) {
+          for (i=0; i < 5; i++) {
+            dispense_limit[i] = IN_PWM-currentPWMs[i];            //set dispense_limit (number of steps to increment PWM by one)
+            max_count[i] = 30*1000/abs(dispense_limit[i]);   //Calculate max_count (number of ms between each PWM step)
+          }  
+        }
+        
         // Valve control (no set flow rate)
         if (IN_Flow == 0) {
           currentPWMs[IN_pump] = IN_PWM;
@@ -164,15 +172,16 @@ void loop() {
         // clear the string:
         inputString = "";
         stringComplete = false;
-        for (i=0; i < 4; i++) {
-          Serial.print("curentPWMs: ");
+        for (i=0; i < 5; i++) {
+          Serial.print(i);
+          Serial.print(" curentPWMs: ");
           Serial.println(currentPWMs[i]);
         }
   } 
 
     // Take care of dispensors here, fires each loop
     // Checks each dispensor for True and set back to false
-    for (i=0; i < 4; i++) {
+    for (i=0; i < 5; i++) {
       // if dispensers[i] is true, time to change PWM by one
       if (dispensers[i]) {
         // if our counter exceeds our limit, stop this process!
