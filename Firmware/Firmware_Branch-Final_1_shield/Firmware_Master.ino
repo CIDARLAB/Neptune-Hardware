@@ -39,32 +39,26 @@
 
 // called this way, it uses the default address 0x40
 // you can also call it with a different address you want --> Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x41);
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+Adafruit_PWMServoDriver pwm0 = Adafruit_PWMServoDriver();
 
 
 //////////////////////////     System Variables      //////////////////////////
 
-/* Timer Variables
- *  ONLY applies to fluid dispensers
- *  #currentPWMs = Stores current value of pump pwm, needed to calculate trigger with given goal PWM and total time to get there
- *  #counters = Keeps track of how many interrupts were fired 
- *  #max_count = Value of count to dispense more liquid 
- *  #dispensers = When true, main loop will move one more PWM step 
- *  #dispense_counter = Keeps track of how many times max_count was reached
- *  #dispense_limit  = Stores number of times dispense_counter hits before turning off desensing
-*/
-    int j; // iterates through loops in trigger
-    int i; // iterates through loops in main
-    int currentPWMs[5]       = {307,307,307,307}; // start at 1.5ms pulses to center (for analog! 50Hz refresh)
-    int counters[5]          = {0};
-    int max_count[5]         = {0};
-    bool dispensers[5]       = {false};
-    int dispense_counter[5]   = {0};
-    int dispense_limit[5]    = {0};
-    
-    // LED variables 
-    unsigned int LEDtoggle = 0;  //used to keep the state of the LED
-    unsigned int LEDcount = 0;   //used to keep count of how many interrupts were fired
+/* Variables to init servos
+ */
+int j; // iterates through loops in trigger
+int i; // iterates through loops in main
+int num                  = 5;
+int currentPWMs[5]       = {470}; // 470 is all the way dispensed (for all servos, mini servo has issues round 470 it is only rated for 460)
+int counters[5]          = {0};
+int max_count[5]         = {0};
+bool dispensers[5]       = {false};
+int dispense_counter[5]   = {0};
+int dispense_limit[5]    = {0};
+
+// LED variables 
+unsigned int LEDtoggle = 0;  //used to keep the state of the LED
+unsigned int LEDcount = 0;   //used to keep count of how many interrupts were fired
 
 
 /* Values to store GUI inputs 
@@ -73,42 +67,13 @@ int IN_pump;            // stores pump number from GUI
 int IN_PWM;             // stores PWM from GUI
 float IN_Flow;            // stores Flow rate from GUI
 
-
+                                    
 /* Serial input variables
  * 
  */
 String inputString = "";         // a string to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
 
-
-/////////////////////     Timer2 Function      /////////////////////
-
-//Timer2 Overflow Interrupt Vector, called every 1ms
-ISR(TIMER2_OVF_vect) {
-  LEDcount++;               //Increments the interrupt counter
-  if(LEDcount > 999){
-    LEDtoggle = !LEDtoggle;    //toggles the LED state
-    LEDcount = 0;           //Resets the interrupt counter
-  }
-  digitalWrite(53,LEDtoggle);
-
-
-  // Quick loop to set dispense variables to true or false
-  for (j=0; j < 5; j++) {
-    if (max_count[j] == 0)             //if max_count is not set (equal to 0) check next trigger
-      continue;
-      
-    counters[j]++;                    //increment counter
-    
-    if (counters[j] >= max_count[j])   //checks if count is equal to the max_count value
-      dispensers[j] = true;           // dispense variable is set to true
-      // reset counter and increment dispense_counter OUTSIDE of this loop to save time   
-  }
-  
-   
-  TCNT2 = 130;           //Reset Timer to 130 out of 255
-  TIFR2 = 0x00;          //Timer2 INT Flag Reg: Clear Timer Overflow Flag
-};  
 
 
 /////////////////////     Setup Function      /////////////////////
@@ -122,9 +87,8 @@ void setup() {
   inputString.reserve(200);   // reserve 200 bytes for the inputString
 
   // Initalize PWM for motor control shield
-  pwm.begin(); 
-  pwm.setPWMFreq(50);  // Analog servos run at ~50 Hz updates, 20ms
-  //pwm.setPWMFreq(300);
+  pwm0.begin(); 
+  pwm0.setPWMFreq(50);  // Analog servos run at ~50 Hz updates, 20ms
   yield();
   
   //Setup Timer2 to fire every 1ms
@@ -149,18 +113,11 @@ void loop() {
         IN_pump = inputString.substring(0,4).toInt();
         IN_PWM = inputString.substring(4,8).toInt();
         IN_Flow = inputString.substring(8,12).toFloat();
-
-        if (IN_pump == 5555) {
-          for (i=0; i < 5; i++) {
-            dispense_limit[i] = IN_PWM-currentPWMs[i];            //set dispense_limit (number of steps to increment PWM by one)
-            max_count[i] = 30*1000/abs(dispense_limit[i]);   //Calculate max_count (number of ms between each PWM step)
-          }  
-        }
         
         // Valve control (no set flow rate)
         if (IN_Flow == 0) {
           currentPWMs[IN_pump] = IN_PWM;
-          pwm.setPWM(IN_pump,0,currentPWMs[IN_pump]);
+          pwm0.setPWM(IN_pump,0,currentPWMs[IN_pump]);
         }
 
         // Despenser control initiation
@@ -196,12 +153,12 @@ void loop() {
           if (dispense_limit[i] < 0) {
              currentPWMs[i]--;                 // set current PWM to new value
              dispense_counter[i]--;            // decrese dispense_counter  
-             pwm.setPWM(i,0,currentPWMs[i]); //Send PWM to servo      
+             pwm0.setPWM(i,0,currentPWMs[i]); //Send PWM to servo      
           }
           else {
             currentPWMs[i]++;                 // set current PWM to new value
             dispense_counter[i]++;            // increment dispense_counter   
-            pwm.setPWM(i,0,currentPWMs[i]); //Send PWM to servo            
+            pwm0.setPWM(i,0,currentPWMs[i]); //Send PWM to servo            
           }  
           Serial.print("fired "); Serial.print(i); Serial.println(currentPWMs[i]);             
         }
@@ -210,6 +167,35 @@ void loop() {
       }
   }
 }
+
+/////////////////////     Timer2 Function      /////////////////////
+
+//Timer2 Overflow Interrupt Vector, called every 1ms
+ISR(TIMER2_OVF_vect) {
+  LEDcount++;               //Increments the interrupt counter
+  if(LEDcount > 999){
+    LEDtoggle = !LEDtoggle;    //toggles the LED state
+    LEDcount = 0;           //Resets the interrupt counter
+  }
+  digitalWrite(53,LEDtoggle);
+
+
+  // Quick loop to set dispense variables to true or false
+  for (j=0; j < 5; j++) {
+    if (max_count[j] == 0)             //if max_count is not set (equal to 0) check next trigger
+      continue;
+      
+    counters[j]++;                    //increment counter
+    
+    if (counters[j] >= max_count[j])   //checks if count is equal to the max_count value
+      dispensers[j] = true;           // dispense variable is set to true
+      // reset counter and increment dispense_counter OUTSIDE of this loop to save time   
+  }
+  
+   
+  TCNT2 = 130;           //Reset Timer to 130 out of 255
+  TIFR2 = 0x00;          //Timer2 INT Flag Reg: Clear Timer Overflow Flag
+};  
 
 
 /////////////////////     Read Serial Function      /////////////////////

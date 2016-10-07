@@ -1,10 +1,10 @@
 //Variables to change
 
-servo_w = 40;
-servo_h = 20;
-servo_hole_diameter = 4;
-servo_hole_distance_from_top_of_servo = 5; 
-servo_hole_seperation = 9.5;
+servo_w = 66;               //40    
+servo_h = 30;               //20
+servo_hole_diameter = 6;    //4
+servo_hole_distance_from_top_of_servo = 6;  //5
+servo_hole_seperation = 18;        //9.5
 
 
 center_of_rotation = 30;
