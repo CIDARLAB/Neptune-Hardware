@@ -1,14 +1,14 @@
 //Change to suit your system
 
 ///// 1cc DONE
-syringe_thickness_in = 1.6;
-syringe_diameter_in = 8.5;
-syringe_slots_diameter = 4;
+//syringe_thickness_in = 1.6;
+//syringe_diameter_in = 8.5;
+//syringe_slots_diameter = 4;
 
 ///// 3cc DONE
-//syringe_thickness_in = 1.45;
-//syringe_diameter_in = 12.65;
-//syringe_slots_diameter = 9;
+syringe_thickness_in = 1.45;
+syringe_diameter_in = 12.65;
+syringe_slots_diameter = 9;
 
 ///// 10cc DONE
 //syringe_thickness_in = 1.85;

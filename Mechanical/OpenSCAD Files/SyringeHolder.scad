@@ -9,12 +9,12 @@
 //syringe_outer_diameter = 16.5;
 
 // 3cc
-//syringe_plung_thickness = 1.8;
-//syringe_outer_diameter = 10.65;
+syringe_plung_thickness = 1.7;
+syringe_outer_diameter = 10.65;
 
 // 1cc
-syringe_plung_thickness = 1.6;
-syringe_outer_diameter = 6.2;
+//syringe_plung_thickness = 1.6;
+//syringe_outer_diameter = 6.2;
 
 center_of_rotation = 30;    // just an example
 
@@ -59,7 +59,7 @@ if (syringe_outer_diameter <= 15) {
         
         // Slot
         translate([0,0,upperslate_h])
-        cube([baseplate_w,syringe_plung_thickness,(syringe_outer_diameter+(syringe_outer_diameter+percent_above_center_of_rotation))],center=true);
+        cube([baseplate_w,syringe_plung_thickness,(syringe_outer_diameter+(syringe_outer_diameter+percent_above_center_of_rotation+15))],center=true);
 
         
         // Center Cylinder
@@ -105,7 +105,7 @@ if (syringe_outer_diameter > 15) {
         
         // Slot
         translate([0,0,upperslate_h])
-        cube([baseplate_w,syringe_plung_thickness,(syringe_outer_diameter+(syringe_outer_diameter+percent_above_center_of_rotation))],center=true);
+        cube([baseplate_w,syringe_plung_thickness,(syringe_outer_diameter+(syringe_outer_diameter+percent_above_center_of_rotation+15))],center=true);
 
         
         // Center Cylinder
