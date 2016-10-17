@@ -4665,8 +4665,11 @@ function initializeSetup(PWM_min,PWM_max,r, b, d, a) {
 //var initializeSetup_outputs = initializeSetup(180,500,0.75,3,0.9,0.5);
 
 
-// Medium syringe
-var initializeSetup_outputs = initializeSetup(180,500,0.63,3,0.88,0.25);
+// Medium analog servo with 12cc syringe
+var initializeSetup_outputs = initializeSetup(180,470,0.63,3,0,0.222);
+
+// Blue Digital with 1cc syringe
+//var initializeSetup_outputs = initializeSetup(1000,2500,0.58,3,0,2.290);
 
 var PWM_table = initializeSetup_outputs.PWM_table;
 var PWM_dic = initializeSetup_outputs.PWM_dic;
