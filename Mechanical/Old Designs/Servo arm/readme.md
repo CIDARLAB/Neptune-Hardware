@@ -1,3 +1,0 @@
-Servo arm
-
-Status: Complete
