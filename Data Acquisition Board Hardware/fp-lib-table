@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name DAB)(type KiCad)(uri "$(KIPRJMOD)/DAB.pretty")(options "")(descr ""))
+)
