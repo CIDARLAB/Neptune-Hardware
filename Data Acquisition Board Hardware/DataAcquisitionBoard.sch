@@ -1,0 +1,280 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:DAB
+LIBS:DataAcquisitionBoard-cache
+EELAYER 25 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title "Data Acquisition Board"
+Date "2016-12-07"
+Rev "1"
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L BNC P1
+U 1 1 5848E61E
+P 5275 3275
+F 0 "P1" H 5285 3395 50  0000 C CNN
+F 1 "BNC" V 5385 3215 50  0000 C CNN
+F 2 "Sockets_BNC:BNC_Socket_TYCO-AMP" H 5275 3275 50  0001 C CNN
+F 3 "" H 5275 3275 50  0000 C CNN
+	1    5275 3275
+	0    1    1    0   
+$EndComp
+$Comp
+L phEZO E1
+U 1 1 5848E652
+P 5275 2675
+F 0 "E1" H 5550 2400 60  0000 C CNN
+F 1 "phEZO" H 4950 3000 60  0000 C CNN
+F 2 "DAB:phEZO" H 5275 2675 60  0001 C CNN
+F 3 "" H 5275 2675 60  0001 C CNN
+	1    5275 2675
+	1    0    0    -1  
+$EndComp
+$Comp
+L DO_EZO E2
+U 1 1 5848E693
+P 6225 2675
+F 0 "E2" H 6500 2400 60  0000 C CNN
+F 1 "DO_EZO" H 5900 3000 60  0000 C CNN
+F 2 "DAB:phEZO" H 6225 2675 60  0001 C CNN
+F 3 "" H 6225 2675 60  0001 C CNN
+	1    6225 2675
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5375 3125 5500 3125
+Wire Wire Line
+	5500 3125 5500 3475
+Wire Wire Line
+	5500 3475 5075 3475
+Wire Wire Line
+	5075 3475 5075 3275
+$Comp
+L BNC P2
+U 1 1 5848E8A5
+P 6225 3275
+F 0 "P2" H 6235 3395 50  0000 C CNN
+F 1 "BNC" V 6335 3215 50  0000 C CNN
+F 2 "Sockets_BNC:BNC_Socket_TYCO-AMP" H 6225 3275 50  0001 C CNN
+F 3 "" H 6225 3275 50  0000 C CNN
+	1    6225 3275
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	6325 3125 6425 3125
+Wire Wire Line
+	6425 3125 6425 3475
+Wire Wire Line
+	6425 3475 6025 3475
+Wire Wire Line
+	6025 3475 6025 3275
+Text Label 4325 1225 0    60   ~ 0
+5V
+Wire Wire Line
+	4325 1225 4325 3750
+Wire Wire Line
+	4325 3750 7525 3750
+Wire Wire Line
+	5825 3750 5825 3125
+Wire Wire Line
+	5825 3125 6125 3125
+Wire Wire Line
+	4800 3750 4800 3125
+Wire Wire Line
+	4800 3125 5175 3125
+Connection ~ 4800 3750
+$Comp
+L phEZO E3
+U 1 1 5848EA59
+P 7125 2675
+F 0 "E3" H 7400 2400 60  0000 C CNN
+F 1 "phEZO" H 6800 3000 60  0000 C CNN
+F 2 "DAB:phEZO" H 7125 2675 60  0001 C CNN
+F 3 "" H 7125 2675 60  0001 C CNN
+	1    7125 2675
+	1    0    0    -1  
+$EndComp
+$Comp
+L phEZO E4
+U 1 1 5848EA9A
+P 7925 2675
+F 0 "E4" H 8200 2400 60  0000 C CNN
+F 1 "phEZO" H 7600 3000 60  0000 C CNN
+F 2 "DAB:phEZO" H 7925 2675 60  0001 C CNN
+F 3 "" H 7925 2675 60  0001 C CNN
+	1    7925 2675
+	1    0    0    -1  
+$EndComp
+$Comp
+L BNC P3
+U 1 1 5848EAD5
+P 7125 3275
+F 0 "P3" H 7135 3395 50  0000 C CNN
+F 1 "BNC" V 7235 3215 50  0000 C CNN
+F 2 "Sockets_BNC:BNC_Socket_TYCO-AMP" H 7125 3275 50  0001 C CNN
+F 3 "" H 7125 3275 50  0000 C CNN
+	1    7125 3275
+	0    1    1    0   
+$EndComp
+$Comp
+L BNC P4
+U 1 1 5848EB1B
+P 7925 3275
+F 0 "P4" H 7935 3395 50  0000 C CNN
+F 1 "BNC" V 8035 3215 50  0000 C CNN
+F 2 "Sockets_BNC:BNC_Socket_TYCO-AMP" H 7925 3275 50  0001 C CNN
+F 3 "" H 7925 3275 50  0000 C CNN
+	1    7925 3275
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	6925 3275 6925 3500
+Wire Wire Line
+	6925 3500 7325 3500
+Wire Wire Line
+	7325 3500 7325 3125
+Wire Wire Line
+	7325 3125 7225 3125
+Wire Wire Line
+	7725 3275 7725 3500
+Wire Wire Line
+	7725 3500 8125 3500
+Wire Wire Line
+	8125 3500 8125 3125
+Wire Wire Line
+	8125 3125 8025 3125
+Wire Wire Line
+	6725 3750 6725 3125
+Wire Wire Line
+	6725 3125 7025 3125
+Connection ~ 5825 3750
+Wire Wire Line
+	7525 3750 7525 3125
+Wire Wire Line
+	7525 3125 7825 3125
+Connection ~ 6725 3750
+Wire Wire Line
+	7825 2200 7825 2100
+Text Label 7825 2100 2    60   ~ 0
+GND
+Text Label 5975 1325 0    60   ~ 0
+GND
+Wire Wire Line
+	7025 2200 7025 2100
+Text Label 7025 2100 2    60   ~ 0
+GND
+Wire Wire Line
+	6125 2200 6125 2100
+Text Label 6125 2100 2    60   ~ 0
+GND
+Wire Wire Line
+	5175 2200 5175 2100
+Text Label 5175 2100 2    60   ~ 0
+GND
+Text Label 5050 1275 0    60   ~ 0
+A4
+$Comp
+L R R1
+U 1 1 5848F097
+P 4875 1500
+F 0 "R1" V 4955 1500 50  0000 C CNN
+F 1 "11K" V 4875 1500 50  0000 C CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" V 4805 1500 50  0001 C CNN
+F 3 "" H 4875 1500 50  0000 C CNN
+	1    4875 1500
+	0    1    1    0   
+$EndComp
+$Comp
+L R R2
+U 1 1 5848F0F1
+P 4875 1725
+F 0 "R2" V 4955 1725 50  0000 C CNN
+F 1 "10K" V 4875 1725 50  0000 C CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" V 4805 1725 50  0001 C CNN
+F 3 "" H 4875 1725 50  0000 C CNN
+	1    4875 1725
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	4325 1500 4725 1500
+Connection ~ 4325 1500
+Wire Wire Line
+	5025 1500 7925 1500
+Wire Wire Line
+	5275 1500 5275 2200
+Wire Wire Line
+	4325 1725 4725 1725
+Connection ~ 4325 1725
+Text Label 5225 1275 0    60   ~ 0
+A5
+Wire Wire Line
+	7925 1500 7925 2200
+Connection ~ 5275 1500
+Wire Wire Line
+	7125 2200 7125 1500
+Connection ~ 7125 1500
+Wire Wire Line
+	6225 2200 6225 1500
+Connection ~ 6225 1500
+Wire Wire Line
+	5050 1275 5050 1500
+Connection ~ 5050 1500
+Wire Wire Line
+	5225 1275 5225 1725
+Wire Wire Line
+	5025 1725 8025 1725
+Wire Wire Line
+	8025 1725 8025 2200
+Connection ~ 5225 1725
+Wire Wire Line
+	5375 2200 5375 1725
+Connection ~ 5375 1725
+Wire Wire Line
+	6325 2200 6325 1725
+Connection ~ 6325 1725
+Wire Wire Line
+	7225 2200 7225 1725
+Connection ~ 7225 1725
+Text Label 5700 1050 0    60   ~ 0
+Ard_GND
+Wire Wire Line
+	5700 1325 5700 1050
+Wire Wire Line
+	5700 1325 5975 1325
+$EndSCHEMATC
